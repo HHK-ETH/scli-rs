@@ -1,10 +1,21 @@
-query MyQuery {
-  factoryDaySnapshots(orderBy: date, orderDirection: desc) {
-    id
-    factory {
-      type
+query DailyVolume($date_start: Int!, $date_end: Int!) {
+  pairDaySnapshots(
+    first: 1000
+    orderBy: volumeUSD
+    orderDirection: desc
+    where: {date_gt: $date_start, date_lt: $date_end}
+  ) {
+    pair {
+      id
+      name
     }
     volumeUSD
+    feesUSD
+    date
+  }
+  factoryDaySnapshots(where: {date_gt: $date_start, date_lt: $date_end}) {
+    volumeUSD
+    feesUSD
     date
   }
 }
