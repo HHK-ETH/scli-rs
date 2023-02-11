@@ -1,0 +1,10 @@
+query MyQuery {
+  factoryDaySnapshots(orderBy: date, orderDirection: desc) {
+    id
+    factory {
+      type
+    }
+    volumeUSD
+    date
+  }
+}
