@@ -174,5 +174,6 @@ pub static MINICHEF_SUBGRAPH: phf::Map<&'static str, &'static str> = phf_map! {
     "kava" => "https://pvt.graph.kava.io/subgraphs/name/sushiswap/kava-minichef",
     "metis" => "https://andromeda.thegraph.metis.io/subgraphs/name/sushiswap/metis-minichef",
     "boba" => "https://api.thegraph.com/subgraphs/name/sushiswap/minichef-boba",
-    "arbitrum_nova" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/minichef-arbitrum-nova"
+    "arbitrum_nova" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/minichef-arbitrum-nova",
+    "bttc" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/minichef-bttc"
 };

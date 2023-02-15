@@ -1,4 +1,4 @@
-query DailyVolume($date_start: Int!, $date_end: Int!) {
+query DailyVolumeQuery($date_start: Int!, $date_end: Int!) {
   pairDaySnapshots(
     first: 1000
     orderBy: volumeUSD
