@@ -12,11 +12,20 @@ use crate::graphql::queries::blockByTimestamp::{block_by_timestamp, BlockByTimes
 use crate::graphql::queries::periodVolumeQuery::{period_volume_query, PeriodVolumeQuery};
 
 fn query_token_list(chain: &str) -> Result<Vec<String>, Box<dyn Error>> {
+    let chain_id = match network::NETWORKS.get(chain) {
+        Some(network) => network.chain_id,
+        None => 0,
+    };
+
     let client = reqwest::blocking::Client::new();
     let result = client
-        .get(format!("https://helper.sushibackup.com/tokens/{chain}"))
+        .get(format!("https://helper.sushibackup.com/tokens/{chain_id}"))
         .send()?;
     let token_list: Vec<String> = result.json()?;
+    let token_list = token_list
+        .iter()
+        .map(|token| token.to_lowercase())
+        .collect();
     Ok(token_list)
 }
 
@@ -88,12 +97,13 @@ pub fn query_period_volume(days: u32) -> HashMap<String, period_volume_query::Re
                 }
             };
 
-            let token_list: Option<Vec<String>> = Some(vec![
-                "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2".to_lowercase(),
-                "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48".to_lowercase(),
-                "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".to_lowercase(),
-                "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174".to_lowercase(),
-            ]);
+            let token_list: Option<Vec<String>> = match query_token_list(chain) {
+                Ok(token_list) => Some(token_list),
+                Err(error) => {
+                    eprintln!("Error while querying token list: {:#?}", error);
+                    None
+                }
+            };
             let volume_request_body =
                 PeriodVolumeQuery::build_query(period_volume_query::Variables {
                     token_list,
