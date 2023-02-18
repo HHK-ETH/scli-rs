@@ -1,12 +1,5 @@
-use std::{
-    collections::HashMap,
-    error::Error,
-    sync::{Arc, Mutex, MutexGuard},
-    thread,
-};
-
-use phf::map::Entries;
 use serde::{de::DeserializeOwned, Serialize};
+use std::error::Error;
 
 pub fn query_subgraph<T, U>(
     url: &str,
