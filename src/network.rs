@@ -177,3 +177,26 @@ pub static MINICHEF_SUBGRAPH: phf::Map<&'static str, &'static str> = phf_map! {
     "arbitrum_nova" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/minichef-arbitrum-nova",
     "bttc" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/minichef-bttc"
 };
+
+pub static BLOCK_SUBGRAPH: phf::Map<&'static str, &'static str> = phf_map! {
+    "ethereum" => "https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks",
+    "gnosis" => "https://api.thegraph.com/subgraphs/name/matthewlilley/xdai-blocks",
+    "polygon" => "https://api.thegraph.com/subgraphs/name/matthewlilley/polygon-blocks",
+    "fantom" => "https://api.thegraph.com/subgraphs/name/matthewlilley/fantom-blocks",
+    "bsc" => "https://api.thegraph.com/subgraphs/name/matthewlilley/bsc-blocks",
+    "harmony" => "https://api.thegraph.com/subgraphs/name/sushiswap/harmony-blocks",
+    "avalanche" => "https://api.thegraph.com/subgraphs/name/matthewlilley/avalanche-blocks",
+    "celo" => "https://api.thegraph.com/subgraphs/name/ubeswap/celo-blocks",
+    "arbitrum" => "https://api.thegraph.com/subgraphs/name/sushiswap/arbitrum-blocks",
+    "moonriver" => "https://api.thegraph.com/subgraphs/name/sushiswap/moonriver-blocks",
+    "fuse" => "https://api.thegraph.com/subgraphs/name/sushiswap/fuse-blocks",
+    "moonbeam" => "https://api.thegraph.com/subgraphs/name/sushiswap/moonbeam-blocks",
+    "optimism" => "https://api.thegraph.com/subgraphs/name/kybernetwork/optimism-blocks",
+    "kava" => "https://pvt.graph.kava.io/subgraphs/name/sushiswap/blocks-kava",
+    "metis" => "https://andromeda.thegraph.metis.io/subgraphs/name/sushiswap/blocks-metis",
+    "arbitrum_nova" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/blocks-arbitrum-nova",
+    "boba" => "https://api.thegraph.com/subgraphs/name/sushiswap/blocks-boba",
+    "boba_avax" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/blocks-boba-avax",
+    "boba_bsc" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/blocks-boba-bnb",
+    "bttc" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/blocks-bttc",
+};

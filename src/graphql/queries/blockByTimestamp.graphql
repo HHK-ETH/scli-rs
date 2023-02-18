@@ -1,0 +1,6 @@
+query BlockByTimestamp {
+    blocks {
+        id
+        number
+    }
+}
