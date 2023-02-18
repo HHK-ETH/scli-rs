@@ -1,0 +1,10 @@
+query PairsByTvl($tokenList: [String!]) {
+  pairs(
+    first: 1000
+    orderBy: liquidityUSD
+    orderDirection: desc
+    where: { token0_in: $tokenList, token1_in: $tokenList }
+  ) {
+    id
+  }
+}

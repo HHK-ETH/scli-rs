@@ -1,8 +1,7 @@
 use std::{
     collections::HashMap,
     error::Error,
-    sync::{Arc, Mutex, MutexGuard},
-    thread::{self},
+    thread,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -16,46 +15,45 @@ type BigDecimal = String;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/graphql/schemas/exchange-v2.json",
-    query_path = "src/graphql/queries/exchange-v2.graphql",
+    query_path = "src/graphql/queries/pairsByTvl.graphql",
     response_derives = "Debug, Clone"
 )]
-pub struct DailyVolumeQuery;
+pub struct PairsByTvl;
 
-pub fn query_daily_volume(
-) -> Result<HashMap<String, daily_volume_query::ResponseData>, Box<dyn Error>> {
+pub fn query_daily_volume() -> Result<HashMap<String, pairs_by_tvl::ResponseData>, Box<dyn Error>> {
     let legacy_subgrahps = network::LEGACY_SUBGRAPH.entries();
 
-    let time: i64 = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap() //unlikely to panic
-        .as_secs() as i64;
+    /*let time: i64 = SystemTime::now()
+    .duration_since(UNIX_EPOCH)
+    .unwrap() //unlikely to panic
+    .as_secs() as i64;*/
 
     let mut handles = vec![];
-    let chain_data: Arc<Mutex<HashMap<String, daily_volume_query::ResponseData>>> =
-        Arc::new(Mutex::new(HashMap::new()));
-
     for (chain, subgraph) in legacy_subgrahps {
-        let chain_data_copy = Arc::clone(&chain_data);
         let handle = thread::spawn(move || {
-            let request_body = DailyVolumeQuery::build_query(daily_volume_query::Variables {
-                date_start: time - 3600 * 48, //48 hours from now
-                date_end: time - 3600 * 24,   //24 hours from now
-            });
+            /*let request_body = PairsByTvl::build_query(pairs_by_tvl::Variables {
+                timestamp_low: time - 3600 * 48, //48 hours from now
+                date_end: time - 3600 * 24,      //24 hours from now
+            });*/
 
-            let res: Response<daily_volume_query::ResponseData> =
+            let token_list: Option<Vec<String>> = Some(vec!["".to_string()]);
+            let request_body = PairsByTvl::build_query(pairs_by_tvl::Variables { token_list });
+
+            let res: Response<pairs_by_tvl::ResponseData> =
                 subgraph::query_subgraph(subgraph, &request_body).unwrap();
 
-            let mut chain_data: MutexGuard<HashMap<String, daily_volume_query::ResponseData>> =
-                chain_data_copy.lock().unwrap();
-            chain_data.insert(chain.to_string(), res.data.unwrap());
+            println!("{:#?}", res);
+
+            return (chain.to_string(), res.data.unwrap());
         });
         handles.push(handle);
     }
 
+    let mut chain_data: HashMap<String, pairs_by_tvl::ResponseData> = HashMap::new();
     for handle in handles {
-        handle.join().unwrap()
+        let data = handle.join().unwrap();
+        chain_data.insert(data.0, data.1);
     }
 
-    let result = chain_data.lock().unwrap();
-    Ok(result.clone())
+    Ok(chain_data)
 }
