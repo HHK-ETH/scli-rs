@@ -1,3 +1,5 @@
+use crate::{network, subgraph};
+use graphql_client::{GraphQLQuery, Response};
 use std::{
     collections::HashMap,
     error::Error,
@@ -5,42 +7,41 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::{network, subgraph};
-use graphql_client::{GraphQLQuery, Response};
+use crate::graphql::queries::blockByTimestamp::{block_by_timestamp, BlockByTimestamp};
+use crate::graphql::queries::periodVolumeQuery::{period_volume_query, PeriodVolumeQuery};
 
-type BigDecimal = String;
-
-// The paths are relative to the directory where your `Cargo.toml` is located.
-// Both json and the GraphQL schema language are supported as sources for the schema
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "src/graphql/schemas/exchange-v2.json",
-    query_path = "src/graphql/queries/pairsByTvl.graphql",
-    response_derives = "Debug, Clone"
-)]
-pub struct PairsByTvl;
-
-pub fn query_daily_volume() -> Result<HashMap<String, pairs_by_tvl::ResponseData>, Box<dyn Error>> {
+pub fn query_period_volume(
+    days: u32,
+) -> Result<HashMap<String, period_volume_query::ResponseData>, Box<dyn Error>> {
     let legacy_subgrahps = network::LEGACY_SUBGRAPH.entries();
 
-    /*let time: i64 = SystemTime::now()
-    .duration_since(UNIX_EPOCH)
-    .unwrap() //unlikely to panic
-    .as_secs() as i64;*/
+    let time: u64 = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap() //unlikely to panic
+        .as_secs() as u64;
 
     let mut handles = vec![];
     for (chain, subgraph) in legacy_subgrahps {
         let handle = thread::spawn(move || {
-            /*let request_body = PairsByTvl::build_query(pairs_by_tvl::Variables {
-                timestamp_low: time - 3600 * 48, //48 hours from now
-                date_end: time - 3600 * 24,      //24 hours from now
-            });*/
+            let timestamp = time - u64::from(86_400 * days);
+            let block_request_body = BlockByTimestamp::build_query(block_by_timestamp::Variables {
+                timestamp: timestamp.to_string(),
+            });
+            let block_subgraph_url = network::BLOCK_SUBGRAPH.get(chain).unwrap();
+            let block_res: Response<block_by_timestamp::ResponseData> =
+                subgraph::query_subgraph(block_subgraph_url, &block_request_body).unwrap();
+            let block = block_res.data.unwrap();
+            let block = block.blocks[0].number.clone();
 
             let token_list: Option<Vec<String>> = Some(vec!["".to_string()]);
-            let request_body = PairsByTvl::build_query(pairs_by_tvl::Variables { token_list });
+            let volume_request_body =
+                PeriodVolumeQuery::build_query(period_volume_query::Variables {
+                    token_list,
+                    block,
+                });
 
-            let res: Response<pairs_by_tvl::ResponseData> =
-                subgraph::query_subgraph(subgraph, &request_body).unwrap();
+            let res: Response<period_volume_query::ResponseData> =
+                subgraph::query_subgraph(subgraph, &volume_request_body).unwrap();
 
             println!("{:#?}", res);
 
@@ -49,7 +50,7 @@ pub fn query_daily_volume() -> Result<HashMap<String, pairs_by_tvl::ResponseData
         handles.push(handle);
     }
 
-    let mut chain_data: HashMap<String, pairs_by_tvl::ResponseData> = HashMap::new();
+    let mut chain_data: HashMap<String, period_volume_query::ResponseData> = HashMap::new();
     for handle in handles {
         let data = handle.join().unwrap();
         chain_data.insert(data.0, data.1);
