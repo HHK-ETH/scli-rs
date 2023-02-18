@@ -197,6 +197,6 @@ pub static BLOCK_SUBGRAPH: phf::Map<&'static str, &'static str> = phf_map! {
     "arbitrum_nova" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/blocks-arbitrum-nova",
     "boba" => "https://api.thegraph.com/subgraphs/name/sushiswap/blocks-boba",
     "boba_avax" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/blocks-boba-avax",
-    "boba_bsc" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/blocks-boba-bnb",
+    "boba_bnb" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/blocks-boba-bnb",
     "bttc" => "https://subgraphs.sushi.com/subgraphs/name/sushiswap/blocks-bttc",
 };
