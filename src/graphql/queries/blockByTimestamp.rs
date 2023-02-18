@@ -1,6 +1,6 @@
 #![allow(clippy::all, warnings)]
 pub struct BlockByTimestamp;
-type BigInt = String;
+type BigInt = u64; //block numbers & timestamp feat an u64
 pub mod block_by_timestamp {
     #![allow(dead_code)]
     use std::result::Result;
@@ -29,7 +29,7 @@ pub mod block_by_timestamp {
     #[derive(Deserialize, Debug)]
     pub struct BlockByTimestampBlocks {
         pub id: ID,
-        pub number: BigInt,
+        pub number: String,
     }
 }
 impl graphql_client::GraphQLQuery for BlockByTimestamp {
