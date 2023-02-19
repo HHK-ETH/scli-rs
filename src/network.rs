@@ -160,8 +160,10 @@ pub static TRIDENT_SUBGRAPH: phf::Map<&'static str, &'static str> = phf_map! {
 pub const MASTERCHEF_SUBGRAPH: &str =
     "https://api.thegraph.com/subgraphs/name/jiro-ono/masterchef-staging";
 
+pub const MASTERCHEFV2_SUBGRAPH: &str =
+    "https://api.thegraph.com/subgraphs/name/sushiswap/master-chefv2";
+
 pub static MINICHEF_SUBGRAPH: phf::Map<&'static str, &'static str> = phf_map! {
-    "ethereum" => "https://api.thegraph.com/subgraphs/name/sushiswap/master-chefv2",
     "polygon" => "https://api.thegraph.com/subgraphs/name/jiro-ono/minichef-staging-updates",
     "gnosis" => "https://api.thegraph.com/subgraphs/name/jiro-ono/gnosis-minichef-staging",
     "arbitrum" => "https://api.thegraph.com/subgraphs/name/jiro-ono/arbitrum-minichef-staging",
