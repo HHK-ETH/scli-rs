@@ -9,15 +9,14 @@ pub enum NetworkName {
     BSC,
     CELO,
     FANTOM,
-    FUSE,
     GNOSIS,
     MOONBEAM,
     MOONRIVER,
     HARMONY,
-    ARBITRUM_NOVA,
+    ArbitrumNova,
     BOBA,
-    BOBA_AVAX,
-    BOBA_BNB,
+    BobaAvax,
+    BobaBnb,
     BTTC,
     METIS,
     OPTIMISM,
@@ -103,7 +102,7 @@ pub static NETWORKS: phf::Map<&'static str, Network> = phf_map! {
         rpc: "https://rpc.bittorrentchain.io"
     },
     "arbitrum_nova" => Network {
-        name: NetworkName::ARBITRUM_NOVA,
+        name: NetworkName::ArbitrumNova,
         chain_id: 42170,
         rpc: "https://nova.arbitrum.io/rpc"
     },
@@ -118,12 +117,12 @@ pub static NETWORKS: phf::Map<&'static str, Network> = phf_map! {
         rpc: "https://rpc.api.moonbeam.network"
     },
     "boba_avax" => Network {
-        name: NetworkName::BOBA_AVAX,
+        name: NetworkName::BobaAvax,
         chain_id: 43288,
         rpc: "https://avax.boba.network"
     },
     "boba_bnb" => Network {
-        name: NetworkName::BOBA_BNB,
+        name: NetworkName::BobaBnb,
         chain_id: 56288,
         rpc: "https://bnb.boba.network"
     },
