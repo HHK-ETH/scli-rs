@@ -4,7 +4,7 @@ use crate::{
         block::block_timestamp::{query_block_timestamp, BlockQueryError},
         token_list::query_token_list,
     },
-    network::{self, LEGACY_SUBGRAPH},
+    network::LEGACY_SUBGRAPH,
     subgraph,
 };
 use graphql_client::{GraphQLQuery, Response};
@@ -18,27 +18,38 @@ pub struct Pair {
     pub fees_usd: f64,
 }
 
+impl Pair {
+    pub fn from(id: String, name: String, volume_usd: String, fees_usd: String) -> Option<Pair> {
+        let volume_usd: f64 = match volume_usd.parse() {
+            Ok(volume) => volume,
+            Err(_) => return None, //don't return pair if can't compute volume
+        };
+        let fees_usd: f64 = match fees_usd.parse() {
+            Ok(fees) => fees,
+            Err(_) => return None, //don't return pair if can't compute fees
+        };
+        return Some(Pair {
+            id,
+            name,
+            volume_usd,
+            fees_usd,
+        });
+    }
+}
+
 fn parse_volume(volume: period_volume_query::ResponseData) -> HashMap<String, Pair> {
     let mut pairs: HashMap<String, Pair> = HashMap::new();
 
     for new_pair_state in volume.new_pairs_state {
-        let volume_usd: f64 = match new_pair_state.volume_usd.parse() {
-            Ok(volume) => volume,
-            Err(_) => break, //don't add pair if can't compute volume
+        match Pair::from(
+            new_pair_state.id,
+            new_pair_state.name,
+            new_pair_state.volume_usd,
+            new_pair_state.fees_usd,
+        ) {
+            Some(pair) => pairs.insert(pair.id.clone(), pair),
+            None => break, //don't add pair if None
         };
-        let fees_usd: f64 = match new_pair_state.fees_usd.parse() {
-            Ok(fees) => fees,
-            Err(_) => break, //don't add pair if can't compute fees
-        };
-        pairs.insert(
-            new_pair_state.id.clone(),
-            Pair {
-                id: new_pair_state.id,
-                name: new_pair_state.name,
-                volume_usd,
-                fees_usd,
-            },
-        );
     }
 
     for old_pair_state in volume.old_pairs_state {
@@ -67,23 +78,15 @@ fn parse_volume(volume: period_volume_query::ResponseData) -> HashMap<String, Pa
     }
 
     for newly_created_pair in volume.newly_created_pairs {
-        let volume_usd: f64 = match newly_created_pair.volume_usd.parse() {
-            Ok(volume) => volume,
-            Err(_) => break, //don't add pair if can't compute volume
+        match Pair::from(
+            newly_created_pair.id,
+            newly_created_pair.name,
+            newly_created_pair.volume_usd,
+            newly_created_pair.fees_usd,
+        ) {
+            Some(pair) => pairs.insert(pair.id.clone(), pair),
+            None => break, //don't add pair if None
         };
-        let fees_usd: f64 = match newly_created_pair.fees_usd.parse() {
-            Ok(fees) => fees,
-            Err(_) => break, //don't add pair if can't compute fees
-        };
-        pairs.insert(
-            newly_created_pair.id.clone(),
-            Pair {
-                id: newly_created_pair.id,
-                name: newly_created_pair.name,
-                volume_usd,
-                fees_usd,
-            },
-        );
     }
 
     pairs
