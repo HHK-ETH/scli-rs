@@ -1,3 +1,3 @@
 pub mod blockByTimestamp;
-pub mod farms;
+pub mod minichefPools;
 pub mod periodVolumeQuery;
