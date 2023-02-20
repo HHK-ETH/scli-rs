@@ -162,6 +162,7 @@ pub const MASTERCHEF_SUBGRAPH: &str =
 
 pub const MASTERCHEFV2_SUBGRAPH: &str =
     "https://api.thegraph.com/subgraphs/name/sushiswap/master-chefv2";
+pub const MASTERCHEFV2_TOKEN: &str = "0xa5e3142b7a5d59f778483a7e0fd3fe4e263388e9";
 
 pub static MINICHEF_SUBGRAPH: phf::Map<&'static str, &'static str> = phf_map! {
     "polygon" => "https://api.thegraph.com/subgraphs/name/jiro-ono/minichef-staging-updates",
