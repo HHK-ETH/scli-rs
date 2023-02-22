@@ -1,6 +1,8 @@
-use std::{cmp::Ordering, collections::HashMap};
+use std::{cmp::Ordering, collections::HashMap, error::Error};
 
 use clap::{Arg, ArgMatches, Command};
+use cli_table::{print_stdout, Cell, CellStruct, Table};
+use serde::Deserialize;
 
 use crate::{
     helpers::{
@@ -11,6 +13,33 @@ use crate::{
     },
     network::{LEGACY_SUBGRAPH, MINICHEF_SUBGRAPH},
 };
+
+#[derive(Deserialize)]
+struct Prices {
+    coins: HashMap<String, Price>,
+}
+
+#[derive(Deserialize)]
+struct Price {
+    decimals: u32,
+    symbol: String,
+    price: f64,
+    timestamp: u32,
+    confidence: f64,
+}
+
+fn query_sushi_price() -> Result<f64, Box<dyn Error>> {
+    let url = "https://coins.llama.fi/prices/current/ethereum:0x6b3595068778dd592e39a122f4f5a5cf09c90fe2?searchWidth=4h";
+    let client = reqwest::blocking::Client::new();
+    let res = client.get(url).send()?;
+    let prices: Prices = res.json()?;
+    let price = prices
+        .coins
+        .get("ethereum:0x6b3595068778dd592e39a122f4f5a5cf09c90fe2")
+        .unwrap()
+        .price;
+    Ok(price)
+}
 
 pub fn command() -> Command {
     let network_arg = Arg::new("network")
@@ -83,20 +112,19 @@ fn compute_revenues(
     days: u32,
     volumes: HashMap<String, Pair>,
     minichef: Option<Minichef>,
+    sushi_price: f64,
 ) -> ChainRevenues {
-    let sushi_price = 1.5;
-
     let mut total_volume = 0.0;
     let mut total_fees = 0.0;
     let mut total_spent = 0.0;
 
-    let mut pairRevenues: Vec<PairRevenues> = vec![];
+    let mut pair_revenues: Vec<PairRevenues> = vec![];
     if minichef.is_none() {
         for pair in volumes.values() {
             total_volume += pair.volume_usd;
             total_fees += pair.fees_usd;
 
-            pairRevenues.push(PairRevenues::new(pair, 0.0, sushi_price))
+            pair_revenues.push(PairRevenues::new(pair, 0.0, sushi_price))
         }
     } else {
         let minichef = minichef.unwrap();
@@ -110,11 +138,11 @@ fn compute_revenues(
             if pool {
                 sushi_amount = minichef.pools.get(&pair.id).unwrap().sushi_per_day * days as f64;
             }
-            pairRevenues.push(PairRevenues::new(pair, sushi_amount, sushi_price))
+            pair_revenues.push(PairRevenues::new(pair, sushi_amount, sushi_price))
         }
     }
 
-    pairRevenues.sort_by(|a, b| {
+    pair_revenues.sort_by(|a, b| {
         let earned_a = a.fees - a.spent;
         let earned_b = b.fees - b.spent;
 
@@ -129,13 +157,13 @@ fn compute_revenues(
         total_volume,
         total_fees,
         total_spent,
-        best: if pairRevenues.len() > 3 {
-            pairRevenues[0..3].to_vec()
+        best: if pair_revenues.len() > 3 {
+            pair_revenues[0..3].to_vec()
         } else {
             [].into()
         },
-        worst: if pairRevenues.len() > 3 {
-            pairRevenues[(pairRevenues.len() - 3)..pairRevenues.len()].to_vec()
+        worst: if pair_revenues.len() > 3 {
+            pair_revenues[(pair_revenues.len() - 3)..pair_revenues.len()].to_vec()
         } else {
             [].into()
         },
@@ -143,6 +171,13 @@ fn compute_revenues(
 }
 
 pub fn execute(params: &ArgMatches) -> () {
+    let sushi_price = match query_sushi_price() {
+        Ok(price) => price,
+        Err(error) => {
+            eprintln!("Error while querying sushi price: {:#?}", error);
+            return;
+        }
+    };
     let network = params.get_one::<String>("network");
     let days = parse_days(params.get_one::<String>("days").unwrap()); //default to 1
 
@@ -167,7 +202,7 @@ pub fn execute(params: &ArgMatches) -> () {
             };
         }
 
-        let revenues = compute_revenues(chain.clone(), days, volume, minichef);
+        let revenues = compute_revenues(chain.clone(), days, volume, minichef, sushi_price);
         println!("{:#?}", revenues);
     } else {
         let chains: Vec<String> = LEGACY_SUBGRAPH
@@ -188,8 +223,35 @@ pub fn execute(params: &ArgMatches) -> () {
             let chain = volume.0;
             let volume = volume.1;
             let minichef = minichefs.remove(&chain);
-            revenues.push(compute_revenues(chain, days, volume, minichef));
+            revenues.push(compute_revenues(chain, days, volume, minichef, sushi_price));
         }
-        println!("{:#?}", revenues);
+
+        revenues.sort_by(|a, b| {
+            if a.total_fees > b.total_fees {
+                return Ordering::Less;
+            }
+            return Ordering::Greater;
+        });
+        let revenues_table: Vec<Vec<CellStruct>> = revenues
+            .iter()
+            .map(|revenue| {
+                vec![
+                    revenue.chain.as_str().cell(),
+                    format!("{} $", revenue.total_volume.round()).cell(),
+                    format!("{} $", revenue.total_fees.round()).cell(),
+                    format!("{} $", revenue.total_spent.round()).cell(),
+                    format!("{} $", (revenue.total_fees - revenue.total_spent).round()).cell(),
+                ]
+            })
+            .collect();
+        let revenues_table = revenues_table.table().title(vec![
+            "Chain".cell(),
+            "Volume".cell(),
+            "Fees".cell(),
+            "Spent".cell(),
+            "Revenue".cell(),
+        ]);
+
+        print_stdout(revenues_table);
     }
 }

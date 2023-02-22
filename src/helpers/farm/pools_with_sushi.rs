@@ -15,7 +15,10 @@ use crate::{
             MinichefPools,
         },
     },
-    network::{MASTERCHEFV2_SUBGRAPH, MASTERCHEFV2_TOKEN, MASTERCHEF_SUBGRAPH, MINICHEF_SUBGRAPH},
+    network::{
+        MASTERCHEFV2_SUBGRAPH, MASTERCHEFV2_TOKEN, MASTERCHEF_DUMMY_TOKENS, MASTERCHEF_SUBGRAPH,
+        MINICHEF_SUBGRAPH,
+    },
     subgraph,
 };
 
@@ -139,7 +142,10 @@ impl Minichef {
                 None => break,
             };
             if pool.id.contains(MASTERCHEFV2_TOKEN) {
+                minichef.sushi_per_day -= pool.sushi_per_day; //remove from total
                 msv2_pool = Some(pool); //save msv2 and don't add it to pools
+            } else if MASTERCHEF_DUMMY_TOKENS.contains(&pool.id.as_str()) {
+                minichef.sushi_per_day -= pool.sushi_per_day; //remove from total and don't add pool
             } else {
                 minichef.pools.insert(pool.id.clone(), pool);
             }

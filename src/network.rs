@@ -163,6 +163,19 @@ pub const MASTERCHEF_SUBGRAPH: &str =
 pub const MASTERCHEFV2_SUBGRAPH: &str =
     "https://api.thegraph.com/subgraphs/name/sushiswap/master-chefv2";
 pub const MASTERCHEFV2_TOKEN: &str = "0xa5e3142b7a5d59f778483a7e0fd3fe4e263388e9";
+pub const MASTERCHEF_DUMMY_TOKENS: [&str; 11] = [
+    "0xfb736dad22b879f055c7aebf3a2e8a197f923ea1", //reduce
+    "0x393b6dc9b00e18314888678721ec0e923fc5f49d", //kava
+    "0x11b66abb675b955bd6f066fde849442865c60e29", //op
+    "0x47a307e3167820daf22a377d777371753758f59c", //polygon
+    "0xcb277e48526f30f625e24850cf293d89301ea470", //bttc
+    "0x65550c7f7280579f34999358b5234f45cfadf50f", //boba
+    "0x69cb9f3d42cf6e3706d62db661c30d048220637a", //arbi nova
+    "0x8f7a3ca0c676cee87c34d5d9c9cab5a51e929984", //kava
+    "0xe7e656893030187f1073e5b2d768e3c1e8861f26", //bsc
+    "0xdf4395818bb8b1a45d4ca6ac9c685646c517f274", //ftm
+    "0x2377e68f0f909e208884e707db4a7cd493911280", //metis
+];
 
 pub static MINICHEF_SUBGRAPH: phf::Map<&'static str, &'static str> = phf_map! {
     "polygon" => "https://api.thegraph.com/subgraphs/name/jiro-ono/minichef-staging-updates",
