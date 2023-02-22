@@ -203,7 +203,7 @@ pub fn execute(params: &ArgMatches) -> () {
         }
 
         let revenues = compute_revenues(chain.clone(), days, volume, minichef, sushi_price);
-        println!("{:#?}", revenues);
+        print_revenues(vec![revenues]);
     } else {
         let chains: Vec<String> = LEGACY_SUBGRAPH
             .keys()
@@ -232,26 +232,31 @@ pub fn execute(params: &ArgMatches) -> () {
             }
             return Ordering::Greater;
         });
-        let revenues_table: Vec<Vec<CellStruct>> = revenues
-            .iter()
-            .map(|revenue| {
-                vec![
-                    revenue.chain.as_str().cell(),
-                    format!("{} $", revenue.total_volume.round()).cell(),
-                    format!("{} $", revenue.total_fees.round()).cell(),
-                    format!("{} $", revenue.total_spent.round()).cell(),
-                    format!("{} $", (revenue.total_fees - revenue.total_spent).round()).cell(),
-                ]
-            })
-            .collect();
-        let revenues_table = revenues_table.table().title(vec![
-            "Chain".cell(),
-            "Volume".cell(),
-            "Fees".cell(),
-            "Spent".cell(),
-            "Revenue".cell(),
-        ]);
 
-        print_stdout(revenues_table);
+        print_revenues(revenues);
     }
+}
+
+fn print_revenues(revenues: Vec<ChainRevenues>) -> () {
+    let revenues_table: Vec<Vec<CellStruct>> = revenues
+        .iter()
+        .map(|revenue| {
+            vec![
+                revenue.chain.as_str().cell(),
+                format!("{} $", revenue.total_volume.round()).cell(),
+                format!("{} $", revenue.total_fees.round()).cell(),
+                format!("{} $", revenue.total_spent.round()).cell(),
+                format!("{} $", (revenue.total_fees - revenue.total_spent).round()).cell(),
+            ]
+        })
+        .collect();
+    let revenues_table = revenues_table.table().title(vec![
+        "Chain".cell(),
+        "Volume".cell(),
+        "Fees".cell(),
+        "Spent".cell(),
+        "Revenue".cell(),
+    ]);
+
+    print_stdout(revenues_table);
 }
