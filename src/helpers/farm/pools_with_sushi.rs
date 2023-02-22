@@ -275,7 +275,7 @@ pub fn query_multichain_pools_with_sushi(chains: Vec<String>) -> HashMap<String,
             Ok(res) => result.insert(res.0, res.1),
             Err(error) => {
                 eprintln!("Error while querying minichef: {:#?}", error);
-                break;
+                continue;
             }
         };
     }
