@@ -4,10 +4,12 @@ use clap::{Arg, ArgMatches, Command};
 
 use crate::{
     helpers::{
-        farm::pools_with_sushi::{query_pools_with_sushi, Minichef},
-        volume::period_volume::{query_period_volume, Pair},
+        farm::pools_with_sushi::{
+            query_multichain_pools_with_sushi, query_pools_with_sushi, Minichef,
+        },
+        volume::period_volume::{query_period_volume, query_period_volume_multichain, Pair},
     },
-    network::MINICHEF_SUBGRAPH,
+    network::{LEGACY_SUBGRAPH, MINICHEF_SUBGRAPH},
 };
 
 pub fn command() -> Command {
@@ -127,8 +129,16 @@ fn compute_revenues(
         total_volume,
         total_fees,
         total_spent,
-        best: pairRevenues[0..3].to_vec(),
-        worst: pairRevenues[(pairRevenues.len() - 3)..pairRevenues.len()].to_vec(),
+        best: if pairRevenues.len() > 3 {
+            pairRevenues[0..3].to_vec()
+        } else {
+            [].into()
+        },
+        worst: if pairRevenues.len() > 3 {
+            pairRevenues[(pairRevenues.len() - 3)..pairRevenues.len()].to_vec()
+        } else {
+            [].into()
+        },
     }
 }
 
@@ -160,5 +170,26 @@ pub fn execute(params: &ArgMatches) -> () {
         let revenues = compute_revenues(chain.clone(), days, volume, minichef);
         println!("{:#?}", revenues);
     } else {
+        let chains: Vec<String> = LEGACY_SUBGRAPH
+            .keys()
+            .map(|chain| chain.to_string())
+            .collect();
+        let volumes = query_period_volume_multichain(chains.clone(), days);
+
+        let mut minichef_chains: Vec<String> = MINICHEF_SUBGRAPH
+            .keys()
+            .map(|chain| chain.to_string())
+            .collect();
+        minichef_chains.push("ethereum".to_string());
+        let mut minichefs = query_multichain_pools_with_sushi(minichef_chains);
+
+        let mut revenues: Vec<ChainRevenues> = vec![];
+        for volume in volumes {
+            let chain = volume.0;
+            let volume = volume.1;
+            let minichef = minichefs.remove(&chain);
+            revenues.push(compute_revenues(chain, days, volume, minichef));
+        }
+        println!("{:#?}", revenues);
     }
 }
