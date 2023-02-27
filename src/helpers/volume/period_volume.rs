@@ -28,12 +28,12 @@ impl Pair {
             Ok(fees) => fees,
             Err(_) => return None, //don't return pair if can't compute fees
         };
-        return Some(Pair {
+        Some(Pair {
             id,
             name,
             volume_usd,
             fees_usd,
-        });
+        })
     }
 }
 
@@ -73,8 +73,8 @@ fn parse_volume(volume: period_volume_query::ResponseData) -> HashMap<String, Pa
                 break;
             }
         };
-        pair.volume_usd = pair.volume_usd - old_volume_usd;
-        pair.fees_usd = pair.fees_usd - old_fees_usd;
+        pair.volume_usd -= old_volume_usd;
+        pair.fees_usd -= old_fees_usd;
     }
 
     for newly_created_pair in volume.newly_created_pairs {
@@ -137,9 +137,9 @@ pub fn query_period_volume(
         };
 
     match res.data {
-        Some(data) => return Ok(parse_volume(data)),
-        None => return Err(PeriodVolumeQueryError::EmptyResponse(chain)),
-    };
+        Some(data) => Ok(parse_volume(data)),
+        None => Err(PeriodVolumeQueryError::EmptyResponse(chain)),
+    }
 }
 
 pub fn query_period_volume_multichain(
@@ -154,7 +154,7 @@ pub fn query_period_volume_multichain(
     for chain in chains {
         let handle = thread::spawn(move || match query_period_volume(chain.clone(), days) {
             Ok(volume) => Ok((chain, volume)),
-            Err(error) => return Err(error),
+            Err(error) => Err(error),
         });
         handles.push(handle);
     }

@@ -52,15 +52,13 @@ pub fn command() -> Command {
         .long("days")
         .default_value("1");
 
-    let revenues = Command::new("revenues")
+    Command::new("revenues")
         .about("Get revenues for all chains by comparing fees with sushi spent.")
         .arg(network_arg)
-        .arg(days_arg);
-
-    revenues
+        .arg(days_arg)
 }
 
-fn parse_days(days: &String) -> u32 {
+fn parse_days(days: &str) -> u32 {
     let days = match days.parse::<u32>() {
         Ok(days) => days,
         Err(error) => {
@@ -119,15 +117,7 @@ fn compute_revenues(
     let mut total_spent = 0.0;
 
     let mut pair_revenues: Vec<PairRevenues> = vec![];
-    if minichef.is_none() {
-        for pair in volumes.values() {
-            total_volume += pair.volume_usd;
-            total_fees += pair.fees_usd;
-
-            pair_revenues.push(PairRevenues::new(pair, 0.0, sushi_price))
-        }
-    } else {
-        let minichef = minichef.unwrap();
+    if let Some(minichef) = minichef {
         total_spent = minichef.sushi_per_day * sushi_price * days as f64;
         for pair in volumes.values() {
             total_volume += pair.volume_usd;
@@ -140,6 +130,13 @@ fn compute_revenues(
             }
             pair_revenues.push(PairRevenues::new(pair, sushi_amount, sushi_price))
         }
+    } else {
+        for pair in volumes.values() {
+            total_volume += pair.volume_usd;
+            total_fees += pair.fees_usd;
+
+            pair_revenues.push(PairRevenues::new(pair, 0.0, sushi_price))
+        }
     }
 
     pair_revenues.sort_by(|a, b| {
@@ -149,7 +146,7 @@ fn compute_revenues(
         if earned_a > earned_b {
             return Ordering::Less;
         };
-        return Ordering::Greater;
+        Ordering::Greater
     });
 
     ChainRevenues {
@@ -170,7 +167,7 @@ fn compute_revenues(
     }
 }
 
-pub fn execute(params: &ArgMatches) -> () {
+pub fn execute(params: &ArgMatches) {
     let sushi_price = match query_sushi_price() {
         Ok(price) => price,
         Err(error) => {
@@ -179,10 +176,9 @@ pub fn execute(params: &ArgMatches) -> () {
         }
     };
     let network = params.get_one::<String>("network");
-    let days = parse_days(params.get_one::<String>("days").unwrap()); //default to 1
+    let days = parse_days(params.get_one::<&str>("days").unwrap()); //default to 1
 
-    if network.is_some() {
-        let chain = network.unwrap();
+    if let Some(chain) = network {
         let volume = match query_period_volume(chain.clone(), days) {
             Ok(volume) => volume,
             Err(error) => {
@@ -209,7 +205,7 @@ pub fn execute(params: &ArgMatches) -> () {
             .keys()
             .map(|chain| chain.to_string())
             .collect();
-        let volumes = query_period_volume_multichain(chains.clone(), days);
+        let volumes = query_period_volume_multichain(chains, days);
 
         let mut minichef_chains: Vec<String> = MINICHEF_SUBGRAPH
             .keys()
@@ -230,14 +226,14 @@ pub fn execute(params: &ArgMatches) -> () {
             if a.total_fees > b.total_fees {
                 return Ordering::Less;
             }
-            return Ordering::Greater;
+            Ordering::Greater
         });
 
         print_revenues(revenues);
     }
 }
 
-fn print_revenues(revenues: Vec<ChainRevenues>) -> () {
+fn print_revenues(revenues: Vec<ChainRevenues>) {
     let revenues_table: Vec<Vec<CellStruct>> = revenues
         .iter()
         .map(|revenue| {
@@ -258,5 +254,5 @@ fn print_revenues(revenues: Vec<ChainRevenues>) -> () {
         "Revenue".cell(),
     ]);
 
-    print_stdout(revenues_table);
+    print_stdout(revenues_table).expect("Error while pinting result.");
 }

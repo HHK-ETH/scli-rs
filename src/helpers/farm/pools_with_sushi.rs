@@ -42,11 +42,11 @@ impl Pool {
 
         let sushi_per_day = alloc_point as f64 / total_alloc_point as f64 * total_sushi_per_day;
 
-        return Some(Pool {
+        Some(Pool {
             id: data.pair,
             alloc_point,
             sushi_per_day,
-        });
+        })
     }
 }
 
@@ -151,8 +151,7 @@ impl Minichef {
             }
         }
 
-        if msv2_pool.is_some() {
-            let msv2_pool = msv2_pool.unwrap();
+        if let Some(msv2_pool) = msv2_pool {
             for pool_data_v2 in msv2.pools {
                 let mut pool_v2 = match Pool::from(
                     FarmsPools {
@@ -224,9 +223,9 @@ fn query_mainnet_pools_with_sushi() -> Result<Minichef, PoolsWithSushiQueryError
     };
 
     match Minichef::from_mainnet(msv1, msv2) {
-        Some(minichef) => return Ok(minichef),
-        None => return Err(PoolsWithSushiQueryError::ParsingMinichef(chain)),
-    };
+        Some(minichef) => Ok(minichef),
+        None => Err(PoolsWithSushiQueryError::ParsingMinichef(chain)),
+    }
 }
 
 pub fn query_pools_with_sushi(chain: String) -> Result<Minichef, PoolsWithSushiQueryError> {
@@ -256,19 +255,17 @@ pub fn query_pools_with_sushi(chain: String) -> Result<Minichef, PoolsWithSushiQ
         None => return Err(PoolsWithSushiQueryError::EmptyResponse(chain)),
     };
     match minichef {
-        Some(minichef) => return Ok(minichef),
-        None => return Err(PoolsWithSushiQueryError::ParsingMinichef(chain)),
-    };
+        Some(minichef) => Ok(minichef),
+        None => Err(PoolsWithSushiQueryError::ParsingMinichef(chain)),
+    }
 }
 
 pub fn query_multichain_pools_with_sushi(chains: Vec<String>) -> HashMap<String, Minichef> {
     let mut handles: Vec<JoinHandle<Result<(String, Minichef), PoolsWithSushiQueryError>>> = vec![];
     for chain in chains {
-        let handle = thread::spawn(move || {
-            match query_pools_with_sushi(chain.clone()) {
-                Ok(minichef) => return Ok((chain, minichef)),
-                Err(error) => return Err(error),
-            };
+        let handle = thread::spawn(move || match query_pools_with_sushi(chain.clone()) {
+            Ok(minichef) => Ok((chain, minichef)),
+            Err(error) => Err(error),
         });
 
         handles.push(handle);
@@ -285,5 +282,5 @@ pub fn query_multichain_pools_with_sushi(chains: Vec<String>) -> HashMap<String,
             }
         };
     }
-    return result;
+    result
 }

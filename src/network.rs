@@ -2,25 +2,25 @@ use phf::phf_map;
 
 #[derive(Debug)]
 pub enum NetworkName {
-    ETHEREUM,
-    POLYGON,
-    AVALANCHE,
-    ARBITRUM,
-    BSC,
-    CELO,
-    FANTOM,
-    GNOSIS,
-    MOONBEAM,
-    MOONRIVER,
-    HARMONY,
+    Ethereum,
+    Polygon,
+    Avalanche,
+    Arbitrum,
+    Bsc,
+    Celo,
+    Fantom,
+    Gnosis,
+    Moonbeam,
+    Moonriver,
+    Harmony,
     ArbitrumNova,
-    BOBA,
+    Boba,
     BobaAvax,
     BobaBnb,
-    BTTC,
-    METIS,
-    OPTIMISM,
-    KAVA,
+    Bttc,
+    Metis,
+    Optimism,
+    Kava,
 }
 
 #[derive(Debug)]
@@ -32,72 +32,72 @@ pub struct Network<'a> {
 
 pub static NETWORKS: phf::Map<&'static str, Network> = phf_map! {
     "ethereum" => Network {
-        name: NetworkName::ETHEREUM,
+        name: NetworkName::Ethereum,
         chain_id: 1,
         rpc: "https://eth.public-rpc.com"
     },
     "arbitrum" => Network {
-        name: NetworkName::ARBITRUM,
+        name: NetworkName::Arbitrum,
         chain_id: 42161,
         rpc: "https://arb1.arbitrum.io/rpc"
     },
     "polygon" => Network {
-        name: NetworkName::POLYGON,
+        name: NetworkName::Polygon,
         chain_id: 137,
         rpc: "https://polygon-rpc.com"
     },
     "fantom" => Network {
-        name: NetworkName::FANTOM,
+        name: NetworkName::Fantom,
         chain_id: 250,
         rpc: "https://rpc.ftm.tools"
     },
     "gnosis" => Network {
-        name: NetworkName::GNOSIS,
+        name: NetworkName::Gnosis,
         chain_id: 100,
         rpc: "https://gnosis.public-rpc.com"
     },
     "boba" => Network {
-        name: NetworkName::BOBA,
+        name: NetworkName::Boba,
         chain_id: 288,
         rpc: "https://mainnet.boba.network"
     },
     "avalanche" => Network {
-        name: NetworkName::AVALANCHE,
+        name: NetworkName::Avalanche,
         chain_id: 43114,
         rpc: "https://avalanche.public-rpc.com"
     },
     "celo" => Network {
-        name: NetworkName::CELO,
+        name: NetworkName::Celo,
         chain_id: 42220,
         rpc: "https://rpc.ankr.com/celo"
     },
     "bsc" => Network {
-        name: NetworkName::BSC,
+        name: NetworkName::Bsc,
         chain_id: 56,
         rpc: "https://bscrpc.com"
     },
     "harmony" => Network {
-        name: NetworkName::HARMONY,
+        name: NetworkName::Harmony,
         chain_id: 1666600000,
         rpc: "https://harmony.public-rpc.com"
     },
     "kava" => Network {
-        name: NetworkName::KAVA,
+        name: NetworkName::Kava,
         chain_id: 2222,
         rpc: "https://evm2.kava.io"
     },
     "metis" => Network {
-        name: NetworkName::METIS,
+        name: NetworkName::Metis,
         chain_id: 1088,
         rpc: "https://andromeda.metis.io/?owner=1088"
     },
     "optimism" => Network {
-        name: NetworkName::OPTIMISM,
+        name: NetworkName::Optimism,
         chain_id: 10,
         rpc: "https://mainnet.optimism.io"
     },
     "bttc" => Network {
-        name: NetworkName::BTTC,
+        name: NetworkName::Bttc,
         chain_id: 199,
         rpc: "https://rpc.bittorrentchain.io"
     },
@@ -107,12 +107,12 @@ pub static NETWORKS: phf::Map<&'static str, Network> = phf_map! {
         rpc: "https://nova.arbitrum.io/rpc"
     },
     "moonriver" => Network {
-        name: NetworkName::MOONRIVER,
+        name: NetworkName::Moonriver,
         chain_id: 1285,
         rpc: "https://rpc.api.moonriver.moonbeam.network"
     },
     "moonbeam" => Network {
-        name: NetworkName::MOONBEAM,
+        name: NetworkName::Moonbeam,
         chain_id: 1284,
         rpc: "https://rpc.api.moonbeam.network"
     },

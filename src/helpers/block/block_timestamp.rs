@@ -20,7 +20,7 @@ pub fn query_block_timestamp(chain: &str, days: u32) -> Result<i64, BlockQueryEr
     let time: u64 = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap() //unlikely to panic
-        .as_secs() as u64;
+        .as_secs();
 
     let timestamp = time - u64::from(86_400 * days);
 
@@ -44,7 +44,7 @@ pub fn query_block_timestamp(chain: &str, days: u32) -> Result<i64, BlockQueryEr
     };
 
     match block_string.parse() {
-        Ok(block) => return Ok(block),
-        Err(error) => return Err(BlockQueryError::ParsingError(error)),
-    };
+        Ok(block) => Ok(block),
+        Err(error) => Err(BlockQueryError::ParsingError(error)),
+    }
 }

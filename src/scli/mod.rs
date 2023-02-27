@@ -2,7 +2,7 @@ use clap::Command;
 
 mod revenues;
 
-pub fn scli() -> () {
+pub fn scli() {
     let revenues = revenues::command();
     let scli = Command::new("scli-rs").subcommand(revenues);
 

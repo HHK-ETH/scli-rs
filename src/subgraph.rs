@@ -12,5 +12,5 @@ where
     let client = reqwest::blocking::Client::new();
     let res: reqwest::blocking::Response = client.post(url).json(request_body).send()?;
     let response_body: graphql_client::Response<U> = res.json()?;
-    return Ok(response_body);
+    Ok(response_body)
 }
