@@ -152,7 +152,7 @@ fn compute_revenues(
     ChainRevenues {
         chain,
         total_volume,
-        total_fees,
+        total_fees: total_fees / 6.0, //only 1/6 goes to teasury
         total_spent,
         best: if pair_revenues.len() > 3 {
             pair_revenues[0..3].to_vec()
@@ -176,7 +176,7 @@ pub fn execute(params: &ArgMatches) {
         }
     };
     let network = params.get_one::<String>("network");
-    let days = parse_days(params.get_one::<&str>("days").unwrap()); //default to 1
+    let days = parse_days(params.get_one::<String>("days").unwrap()); //default to 1
 
     if let Some(chain) = network {
         let volume = match query_period_volume(chain.clone(), days) {
@@ -249,7 +249,7 @@ fn print_revenues(revenues: Vec<ChainRevenues>) {
     let revenues_table = revenues_table.table().title(vec![
         "Chain".cell(),
         "Volume".cell(),
-        "Fees".cell(),
+        "Fees (to Treasury)".cell(),
         "Spent".cell(),
         "Revenue".cell(),
     ]);
