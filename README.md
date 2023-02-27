@@ -20,4 +20,5 @@ Options:
 
 ## Disclaimer
 
-This programm has been built as a training exercise and is far from perfect, many things can be improved.
+This program has been built as a training exercise and is far from perfect, many things can be improved.
+Do not only rely on it for important data.
